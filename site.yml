@@ -40,12 +40,13 @@
   become: true
   tasks:
 
-  - name: install apache and php for Ubuntu Server
-    tags: apache, apache2, ubuntu
+  - name: install nginx, apache and php for Ubuntu Server
+    tags: apache, apache2, nginx, ubuntu
     apt:
       name:
         - apache2
         - libapache2-mod-php
+        - nginx
       state: latest
     when: ansible_distribution == "Ubuntu"
 
@@ -58,6 +59,30 @@
       state: latest
     when: ansible_distribution == "CentOS"
 
+  - name: start httpd (CentOS)
+    tags: centos, apache, httpd
+    service:
+      name: httpd
+      state: started
+      enabled: yes
+    when: ansible_distribution == "CentOS"
+
+  - name: set gzip to off in nginx conf (Ubuntu)
+    tags: nginx, ubuntu, gzip
+    lineinfile:
+      path: /etc/nginx/nginx.conf
+      regexp: '^gzip'
+      line: gzip off;
+    when: ansible_distribution == "Ubuntu"
+    register: nginx_state
+
+  - name: restart nginx (Ubuntu)
+    tags: nginx, ubuntu
+    service:
+      name: nginx
+      state: restarted
+    when: nginx_state.changed
+
   - name: copy default html file for site
     tags: apache, apache2, httpd
     copy:
@@ -65,7 +90,7 @@
       dest: /var/www/html/index.html
       owner: root
       group: root
-      mode: 0644 
+      mode: 0644
 
 - hosts: db_servers
   become: true
