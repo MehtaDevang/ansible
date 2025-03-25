@@ -11,3 +11,6 @@ This is a repository for learning and practising ansible
 
 - To run an ansible playbook:
 	- ansible-playbook --ask-become-pass <playbook-name>.yml
+
+
+pre_tasks: runs before any other task is executed in the play
