@@ -1,45 +1,36 @@
-- name: install nginx, apache and php for Ubuntu Server
-  tags: apache, apache2, nginx, ubuntu
+- name: install nginx, apache and php
+  tags: apache, httpd, nginx
   apt:
     name:
-      - apache2
-      - libapache2-mod-php
-      - nginx
+      - "{{ apache_package_name }}"
+      - "{{ php_package_name }}"
+      - "{{ nginx_package_name }}"
     state: latest
-  when: ansible_distribution == "Ubuntu"
+  #when: ansible_distribution == "Ubuntu"
 
-- name: install apache and php for CentOS Server
-  tags: apache, httpd, centos
-  dnf:
-    name:
-      - httpd
-      - php
-    state: latest
-  when: ansible_distribution == "CentOS"
-
-- name: start httpd (CentOS)
-  tags: centos, apache, httpd
+- name: start and enable apache service
+  tags: apache, httpd
   service:
-    name: httpd
+    name: "{{ apache_service }}"
     state: started
     enabled: yes
   when: ansible_distribution == "CentOS"
 
-- name: set gzip to off in nginx conf (Ubuntu)
-  tags: nginx, ubuntu, gzip
-  lineinfile:
-    path: /etc/nginx/nginx.conf
-    regexp: '^gzip'
-    line: gzip off;
-  when: ansible_distribution == "Ubuntu"
-  register: nginx_state
+#- name: set gzip to off in nginx conf (Ubuntu)
+#  tags: nginx, ubuntu, gzip
+#  lineinfile:
+#    path: /etc/nginx/nginx.conf
+#    regexp: '^gzip'
+#    line: gzip off;
+#  when: ansible_distribution == "Ubuntu"
+#  register: nginx_state
 
-- name: restart nginx (Ubuntu)
-  tags: nginx, ubuntu
+- name: restart nginx
+  tags: nginx
   service:
-    name: nginx
+    name: "{{ nginx_service_name }}"
     state: restarted
-  when: nginx_state.changed
+  #when: nginx_state.changed
 
 - name: copy default html file for site
   tags: apache, apache2, httpd
